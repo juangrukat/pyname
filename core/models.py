@@ -242,12 +242,20 @@ class HistoryBatch(BaseModel):
 
 # core/models.py (continued)
 
+class ProviderApiKeys(BaseModel):
+    """API keys for each provider."""
+    openai: str | None = None
+    anthropic: str | None = None
+    openrouter: str | None = None
+
+
 class LLMConfig(BaseModel):
     """LLM provider configuration."""
     provider: LLMProvider = LLMProvider.OLLAMA
     model: str = "llava:latest"
     api_base: str = "http://localhost:11434"
-    api_key: str | None = None
+    api_key: str | None = None  # Runtime-resolved key (not persisted)
+    api_keys: ProviderApiKeys = Field(default_factory=ProviderApiKeys)
     image_mode: ImageMode = ImageMode.AUTO
     temperature: float = Field(default=0.3, ge=0.0, le=2.0)
     max_tokens: int = Field(default=500, ge=50)

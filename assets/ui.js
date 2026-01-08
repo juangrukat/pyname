@@ -882,7 +882,23 @@ async function saveSettings() {
     const provider = document.getElementById('llm-provider').value;
     const defaults = PROVIDER_DEFAULTS[provider] || PROVIDER_DEFAULTS.ollama;
     const apiBaseValue = document.getElementById('api-base').value || defaults.api_base;
-    const apiKeyValue = document.getElementById('api-key').value || null;
+    const apiKeyInputValue = document.getElementById('api-key').value || null;
+    
+    // Build api_keys object - preserve existing keys and update current provider's key
+    const existingApiKeys = state.config?.llm?.api_keys || {};
+    const apiKeys = {
+        openai: existingApiKeys.openai || null,
+        anthropic: existingApiKeys.anthropic || null,
+        openrouter: existingApiKeys.openrouter || null
+    };
+    // Update the key for the current provider
+    if (provider === 'openai' || provider === 'lmstudio') {
+        apiKeys.openai = apiKeyInputValue;
+    } else if (provider === 'anthropic') {
+        apiKeys.anthropic = apiKeyInputValue;
+    } else if (provider === 'openrouter') {
+        apiKeys.openrouter = apiKeyInputValue;
+    }
     const temperatureValue = parseFloat(document.getElementById('llm-temperature').value);
     const timeoutValue = parseInt(document.getElementById('llm-timeout').value, 10);
     const neighborCountValue = parseInt(document.getElementById('neighbor-count').value, 10);
@@ -905,7 +921,7 @@ async function saveSettings() {
         llm: {
             provider: provider,
             model: document.getElementById('llm-model').value,
-            api_key: apiKeyValue,
+            api_keys: apiKeys,
             api_base: apiBaseValue,
             image_mode: document.getElementById('llm-image-mode').value,
             temperature: Number.isFinite(temperatureValue) ? temperatureValue : 0.3,
@@ -966,15 +982,18 @@ function applyConfigToUI(config) {
     if (!config) return;
     
     if (config.llm) {
-        document.getElementById('llm-provider').value = config.llm.provider || 'ollama';
+        const provider = config.llm.provider || 'ollama';
+        document.getElementById('llm-provider').value = provider;
         document.getElementById('llm-model').value = config.llm.model || 'llava:latest';
         document.getElementById('api-base').value = config.llm.api_base || 'http://localhost:11434';
-        document.getElementById('api-key').value = config.llm.api_key || '';
+        // Load API key for current provider from api_keys
+        const apiKey = getApiKeyForProvider(config, provider);
+        document.getElementById('api-key').value = apiKey || '';
         document.getElementById('llm-image-mode').value = config.llm.image_mode || 'auto';
         document.getElementById('llm-temperature').value = config.llm.temperature ?? 0.3;
         document.getElementById('llm-timeout').value = config.llm.timeout_seconds ?? 60;
         handleProviderChange({ preserveValues: true });
-        updateApiKeyHint(config, config.llm.provider);
+        updateApiKeyHint(config, provider);
     }
     
     if (config.processing) {
@@ -1016,6 +1035,7 @@ function handleProviderChange(eventOrOptions) {
     const preserveValues = eventOrOptions && eventOrOptions.preserveValues === true;
     const provider = document.getElementById('llm-provider').value;
     const apiKeyGroup = document.getElementById('api-key-group');
+    const apiKeyInput = document.getElementById('api-key');
     const modelInput = document.getElementById('llm-model');
     const apiBaseInput = document.getElementById('api-base');
     const defaults = PROVIDER_DEFAULTS[provider] || PROVIDER_DEFAULTS.ollama;
@@ -1035,7 +1055,23 @@ function handleProviderChange(eventOrOptions) {
 
     modelInput.value = defaults.model;
     apiBaseInput.value = defaults.api_base;
+    // Load API key for new provider
+    const apiKey = getApiKeyForProvider(state.config, provider);
+    apiKeyInput.value = apiKey || '';
     updateApiKeyHint(state.config, provider);
+}
+
+function getApiKeyForProvider(config, provider) {
+    // Get API key for the specified provider from api_keys object
+    const apiKeys = config?.llm?.api_keys || {};
+    if (provider === 'openai' || provider === 'lmstudio') {
+        return apiKeys.openai || null;
+    } else if (provider === 'anthropic') {
+        return apiKeys.anthropic || null;
+    } else if (provider === 'openrouter') {
+        return apiKeys.openrouter || null;
+    }
+    return null;
 }
 
 function updateApiKeyHint(config, provider) {

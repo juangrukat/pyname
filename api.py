@@ -89,6 +89,7 @@ class API:
         config = self._config_manager.get_sync()
         payload = config.model_dump()
         payload["env_api_keys"] = self._config_manager.env_api_key_status()
+        payload["api_key_status"] = self._config_manager.api_key_status()
         return json.dumps(payload)
     
     def save_config(self, config_json: str) -> str:

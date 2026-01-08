@@ -90,9 +90,9 @@ class ConfigManager:
         return AppConfig()
 
     def get_runtime_sync(self) -> AppConfig:
-        """Get config with env var API keys applied for runtime use."""
+        """Get config with API key resolved for the current provider."""
         config = self.get_sync()
-        return self._apply_env_api_key(config)
+        return self._apply_provider_api_key(config)
 
     def env_api_key_status(self) -> dict[str, bool]:
         """Return which env vars are available for API keys."""
@@ -102,38 +102,52 @@ class ConfigManager:
             "openrouter": bool(os.getenv("OPENROUTER_API_KEY")),
         }
 
-    def _apply_env_api_key(self, config: AppConfig) -> AppConfig:
-        """Apply env var API key - resolve references or auto-detect."""
-        api_key = config.llm.api_key
+    def api_key_status(self) -> dict[str, dict[str, bool]]:
+        """Return status of API keys (stored and env) for each provider."""
+        config = self.get_sync()
+        return {
+            "openai": {
+                "stored": bool(config.llm.api_keys.openai),
+                "env": bool(os.getenv("OPENAI_API_KEY")),
+            },
+            "anthropic": {
+                "stored": bool(config.llm.api_keys.anthropic),
+                "env": bool(os.getenv("ANTHROPIC_API_KEY")),
+            },
+            "openrouter": {
+                "stored": bool(config.llm.api_keys.openrouter),
+                "env": bool(os.getenv("OPENROUTER_API_KEY")),
+            },
+        }
+
+    def _apply_provider_api_key(self, config: AppConfig) -> AppConfig:
+        """Resolve API key for the current provider from api_keys or env vars."""
+        provider = config.llm.provider
+        api_keys = config.llm.api_keys
         
-        # If api_key is an env var reference like $VAR or ${VAR}, resolve it
-        if api_key and isinstance(api_key, str):
-            resolved_key = self._resolve_env_var(api_key)
-            if resolved_key != api_key:
-                # It was an env var reference, use the resolved value
-                updated_llm = config.llm.model_copy(update={"api_key": resolved_key})
-                return config.model_copy(update={"llm": updated_llm})
-            # Otherwise it's a literal key, use as-is
-            return config
+        # Map provider to stored key and env var
+        key_map = {
+            LLMProvider.OPENAI: (api_keys.openai, "OPENAI_API_KEY"),
+            LLMProvider.ANTHROPIC: (api_keys.anthropic, "ANTHROPIC_API_KEY"),
+            LLMProvider.OPENROUTER: (api_keys.openrouter, "OPENROUTER_API_KEY"),
+            LLMProvider.LMSTUDIO: (api_keys.openai, "OPENAI_API_KEY"),  # LM Studio can use OpenAI key
+            LLMProvider.OLLAMA: (None, None),  # Ollama doesn't need API key
+        }
         
-        # Auto-detect env var based on provider if no key specified
-        env_var = None
-        if config.llm.provider == LLMProvider.OPENAI:
-            env_var = "OPENAI_API_KEY"
-        elif config.llm.provider == LLMProvider.ANTHROPIC:
-            env_var = "ANTHROPIC_API_KEY"
-        elif config.llm.provider == LLMProvider.OPENROUTER:
-            env_var = "OPENROUTER_API_KEY"
-
-        if not env_var:
-            return config
-
-        env_key = os.getenv(env_var)
-        if not env_key:
-            return config
-
-        updated_llm = config.llm.model_copy(update={"api_key": env_key})
-        return config.model_copy(update={"llm": updated_llm})
+        stored_key, env_var = key_map.get(provider, (None, None))
+        
+        # Resolve the key: stored key takes priority, then env var
+        resolved_key = None
+        if stored_key:
+            resolved_key = self._resolve_env_var(stored_key)
+        if not resolved_key and env_var:
+            resolved_key = os.getenv(env_var)
+        
+        if resolved_key:
+            updated_llm = config.llm.model_copy(update={"api_key": resolved_key})
+            return config.model_copy(update={"llm": updated_llm})
+        
+        return config
 
     @staticmethod
     def _resolve_env_var(value: str) -> str | None:
