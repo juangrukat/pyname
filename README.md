@@ -286,6 +286,10 @@ Example tag guidance prompts (three personas):
 - **Photographer (shoot context)**: "Emphasize location, event type, and genre; avoid camera model; keep tags short."
 - **Product designer (UX/UI assets)**: "Focus on component type, platform, and intent (e.g., onboarding, settings); avoid project code names."
 
+Example prompt for tags:
+
+"Knowledge Manager (Learning Context): Focus on the cognitive goal and structural role of the content (e.g., 'Evidence', 'Hypothesis', 'Pedagogy'); identify the target learning stage (e.g., 'Beginner', 'Advanced'); avoid generic format descriptions like 'text file' or 'screenshot'."
+
 Prompt overrides:
 - `prompts.system.*` and `prompts.user.*` let you override prompts per file type (`image`, `video`, `document`, `generic`).
 - `show_prompt_preview` + `prompt_preview_chars` reveal the exact prompt payloads in the results list.
