@@ -29,6 +29,7 @@ class LLMProvider(str, Enum):
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
     LMSTUDIO = "lmstudio"
+    OPENROUTER = "openrouter"
 
 
 class TagMode(str, Enum):

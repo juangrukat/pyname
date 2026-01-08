@@ -99,6 +99,7 @@ class ConfigManager:
         return {
             "openai": bool(os.getenv("OPENAI_API_KEY")),
             "anthropic": bool(os.getenv("ANTHROPIC_API_KEY")),
+            "openrouter": bool(os.getenv("OPENROUTER_API_KEY")),
         }
 
     def _apply_env_api_key(self, config: AppConfig) -> AppConfig:
@@ -121,6 +122,8 @@ class ConfigManager:
             env_var = "OPENAI_API_KEY"
         elif config.llm.provider == LLMProvider.ANTHROPIC:
             env_var = "ANTHROPIC_API_KEY"
+        elif config.llm.provider == LLMProvider.OPENROUTER:
+            env_var = "OPENROUTER_API_KEY"
 
         if not env_var:
             return config

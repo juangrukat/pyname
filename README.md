@@ -166,6 +166,29 @@ With `api_key` empty, the app uses `OPENAI_API_KEY` from your environment. For A
 }
 ```
 
+#### OpenRouter
+
+```json
+{
+    "llm": {
+        "provider": "openrouter",
+        "model": "anthropic/claude-3.5-sonnet",
+        "api_base": "https://openrouter.ai/api/v1",
+        "api_key": null
+    }
+}
+```
+
+Set `OPENROUTER_API_KEY` in your environment, or add the key directly to `api_key`.
+
+**Important:** When using OpenRouter for image/video analysis, you **must select a vision-capable model**. OpenRouter aggregates many providers, and not all models support vision. Examples of vision-capable models (select input modalities to text, and image to browse supported models):
+- `anthropic/claude-3.5-sonnet`
+- `openai/gpt-4o`
+- `google/gemini-flash-1.5`
+- `qwen/qwen2-vl-72b-instruct`
+
+If you select a non-vision model (e.g., `meta-llama/llama-3-70b-instruct`), image data will still be sent but the model will likely return errors or nonsensical results. Check [OpenRouter's model list](https://openrouter.ai/models) and filter by "vision" capability.
+
 ### Configuration File
 
 Settings are stored in `data/config.json`:

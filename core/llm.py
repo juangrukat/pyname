@@ -3,6 +3,7 @@ from .providers.base import BaseLLMProvider
 from .providers.ollama import OllamaProvider
 from .providers.openai import OpenAIProvider
 from .providers.anthropic import AnthropicProvider
+from .providers.openrouter import OpenRouterProvider
 
 
 class LLMClient:
@@ -13,6 +14,7 @@ class LLMClient:
         LLMProvider.OPENAI: OpenAIProvider,
         LLMProvider.ANTHROPIC: AnthropicProvider,
         LLMProvider.LMSTUDIO: OpenAIProvider,
+        LLMProvider.OPENROUTER: OpenRouterProvider,
     }
     
     def __init__(self, config: LLMConfig, prompts: PromptOverrides | None = None):

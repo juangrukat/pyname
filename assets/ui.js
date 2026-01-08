@@ -59,6 +59,11 @@ const PROVIDER_DEFAULTS = {
         model: 'claude-3-haiku-20240307',
         api_base: 'https://api.anthropic.com/v1',
         needsKey: true
+    },
+    openrouter: {
+        model: 'qwen/qwen3-vl-8b-instruct',
+        api_base: 'https://openrouter.ai/api/v1',
+        needsKey: true
     }
 };
 
@@ -1043,7 +1048,9 @@ function updateApiKeyHint(config, provider) {
         ? 'OPENAI_API_KEY'
         : provider === 'anthropic'
             ? 'ANTHROPIC_API_KEY'
-            : null;
+            : provider === 'openrouter'
+                ? 'OPENROUTER_API_KEY'
+                : null;
     const envPresent = envVarName ? Boolean(envKeys[provider]) : false;
     const hasValue = Boolean(apiKeyInput.value);
 
