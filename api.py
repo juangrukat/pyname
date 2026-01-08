@@ -87,7 +87,9 @@ class API:
     def get_config(self) -> str:
         """Get current configuration as JSON."""
         config = self._config_manager.get_sync()
-        return config.model_dump_json()
+        payload = config.model_dump()
+        payload["env_api_keys"] = self._config_manager.env_api_key_status()
+        return json.dumps(payload)
     
     def save_config(self, config_json: str) -> str:
         """
@@ -159,7 +161,7 @@ class API:
         asyncio.set_event_loop(loop)
         
         try:
-            config = self._config_manager.get_sync()
+            config = self._config_manager.get_runtime_sync()
             self._processor = FileProcessor(config)
             
             def on_status(status: ProcessingStatus):

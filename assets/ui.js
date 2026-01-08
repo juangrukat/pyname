@@ -873,6 +873,7 @@ function closeSettings() {
 
 async function saveSettings() {
     storePromptEdits();
+    const envKeys = state.config?.env_api_keys;
     const provider = document.getElementById('llm-provider').value;
     const defaults = PROVIDER_DEFAULTS[provider] || PROVIDER_DEFAULTS.ollama;
     const apiBaseValue = document.getElementById('api-base').value || defaults.api_base;
@@ -942,6 +943,9 @@ async function saveSettings() {
         }
         
         state.config = config;
+        if (envKeys) {
+            state.config.env_api_keys = envKeys;
+        }
         closeSettings();
         setStatus('Settings saved');
         if (state.results.length > 0) {
@@ -965,6 +969,7 @@ function applyConfigToUI(config) {
         document.getElementById('llm-temperature').value = config.llm.temperature ?? 0.3;
         document.getElementById('llm-timeout').value = config.llm.timeout_seconds ?? 60;
         handleProviderChange({ preserveValues: true });
+        updateApiKeyHint(config, config.llm.provider);
     }
     
     if (config.processing) {
@@ -1019,11 +1024,36 @@ function handleProviderChange(eventOrOptions) {
         if (!apiBaseInput.value) {
             apiBaseInput.value = defaults.api_base;
         }
+        updateApiKeyHint(state.config, provider);
         return;
     }
 
     modelInput.value = defaults.model;
     apiBaseInput.value = defaults.api_base;
+    updateApiKeyHint(state.config, provider);
+}
+
+function updateApiKeyHint(config, provider) {
+    const apiKeyInput = document.getElementById('api-key');
+    const apiKeyHint = document.getElementById('api-key-hint');
+    if (!apiKeyInput || !apiKeyHint) return;
+
+    const envKeys = (config && config.env_api_keys) || {};
+    const envVarName = provider === 'openai'
+        ? 'OPENAI_API_KEY'
+        : provider === 'anthropic'
+            ? 'ANTHROPIC_API_KEY'
+            : null;
+    const envPresent = envVarName ? Boolean(envKeys[provider]) : false;
+    const hasValue = Boolean(apiKeyInput.value);
+
+    if (!hasValue && envPresent) {
+        apiKeyInput.placeholder = `Using ${envVarName} from environment`;
+        apiKeyHint.textContent = `Using ${envVarName} from environment. Leave blank to keep using it.`;
+    } else {
+        apiKeyInput.placeholder = '';
+        apiKeyHint.textContent = 'Stored locally in data/config.json.';
+    }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

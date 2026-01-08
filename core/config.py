@@ -1,9 +1,10 @@
 import json
+import os
 import aiofiles
 from pathlib import Path
 from typing import Optional
 
-from .models import AppConfig
+from .models import AppConfig, LLMProvider
 
 
 class ConfigManager:
@@ -87,3 +88,36 @@ class ConfigManager:
                 pass
         
         return AppConfig()
+
+    def get_runtime_sync(self) -> AppConfig:
+        """Get config with env var API keys applied for runtime use."""
+        config = self.get_sync()
+        return self._apply_env_api_key(config)
+
+    def env_api_key_status(self) -> dict[str, bool]:
+        """Return which env vars are available for API keys."""
+        return {
+            "openai": bool(os.getenv("OPENAI_API_KEY")),
+            "anthropic": bool(os.getenv("ANTHROPIC_API_KEY")),
+        }
+
+    def _apply_env_api_key(self, config: AppConfig) -> AppConfig:
+        """Apply env var API key if config does not include one."""
+        if config.llm.api_key:
+            return config
+
+        env_var = None
+        if config.llm.provider == LLMProvider.OPENAI:
+            env_var = "OPENAI_API_KEY"
+        elif config.llm.provider == LLMProvider.ANTHROPIC:
+            env_var = "ANTHROPIC_API_KEY"
+
+        if not env_var:
+            return config
+
+        env_key = os.getenv(env_var)
+        if not env_key:
+            return config
+
+        updated_llm = config.llm.model_copy(update={"api_key": env_key})
+        return config.model_copy(update={"llm": updated_llm})

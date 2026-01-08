@@ -50,7 +50,13 @@ pip install -r requirements.txt
 
 ### Configure OpenAI
 
-Create or edit `data/config.json` with your OpenAI settings:
+Set your key in the environment (recommended):
+
+```bash
+export OPENAI_API_KEY="sk-..."
+```
+
+Then create or edit `data/config.json` with your OpenAI settings:
 
 ```json
 {
@@ -58,10 +64,12 @@ Create or edit `data/config.json` with your OpenAI settings:
         "provider": "openai",
         "model": "gpt-5-nano",
         "api_base": "https://api.openai.com/v1",
-        "api_key": "sk-..."
+        "api_key": null
     }
 }
 ```
+
+If `api_key` is empty, the app uses `OPENAI_API_KEY` at runtime. If you prefer, you can still store the key directly in `data/config.json` (it is gitignored, but less secure than env vars).
 
 ### Running
 
@@ -118,10 +126,12 @@ python main.py
         "provider": "openai",
         "model": "gpt-5-nano",
         "api_base": "https://api.openai.com/v1",
-        "api_key": "sk-..."
+        "api_key": null
     }
 }
 ```
+
+With `api_key` empty, the app uses `OPENAI_API_KEY` from your environment. For Anthropic, use `ANTHROPIC_API_KEY`.
 
 ### Alternative Providers
 
@@ -208,7 +218,7 @@ Settings are stored in `data/config.json`:
 }
 ```
 
-You can edit settings directly in the app (⌘ + ,) or by editing `data/config.json`. Changes are saved immediately and reused next launch, and the UI maps 1:1 to these keys.
+You can edit settings directly in the app (⌘ + ,) or by editing `data/config.json`. Changes are saved immediately and reused next launch, and the UI maps 1:1 to these keys. When `api_key` is empty, the UI shows a hint if an environment key is available.
 
 Prompt overrides are optional. Leave values as `null` to use built-in defaults.
 
