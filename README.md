@@ -277,7 +277,14 @@ Pynamer has a full tagging pipeline, not just a single on/off toggle:
   - `tag_count = 0` disables tag suggestions from the model
   - `tag_mode = append` keeps existing Finder tags and adds new ones
   - `tag_mode = replace` removes existing Finder tags before applying new ones
+- **Tag prompt guidance is additive** - `tag_prompt` appends extra guidance on top of the built-in tag taxonomy; it does not replace it.
 - **Finder integration** - Tags are applied via the macOS `tag` CLI (`brew install tag`).
+
+Example tag guidance prompts (three personas):
+
+- **Archivist (controlled vocabulary)**: "Prefer standardized subject headings; avoid trendy slang; keep tags broad enough to group similar items."
+- **Photographer (shoot context)**: "Emphasize location, event type, and genre; avoid camera model; keep tags short."
+- **Product designer (UX/UI assets)**: "Focus on component type, platform, and intent (e.g., onboarding, settings); avoid project code names."
 
 Prompt overrides:
 - `prompts.system.*` and `prompts.user.*` let you override prompts per file type (`image`, `video`, `document`, `generic`).
