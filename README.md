@@ -221,6 +221,7 @@ These controls let you tune how much context the model sees and what influences 
 - `include_neighbor_names` + `neighbor_context_count` include nearby filenames to mirror your current naming conventions.
 - `include_file_content` + `content_max_chars` add text/PDF excerpts for document-aware naming.
 - `video_extract_count` samples video frames and sends them for vision analysis (OpenAI only, uses ffmpeg).
+- `max_tokens` caps the model's output length (not the input prompt size).
 - `case_style`, `include_date_prefix`, and `date_format` control the final name format.
 
 ### Tags & Prompt Overrides

@@ -878,7 +878,6 @@ async function saveSettings() {
     const apiBaseValue = document.getElementById('api-base').value || defaults.api_base;
     const apiKeyValue = document.getElementById('api-key').value || null;
     const temperatureValue = parseFloat(document.getElementById('llm-temperature').value);
-    const maxTokensValue = parseInt(document.getElementById('llm-max-tokens').value, 10);
     const timeoutValue = parseInt(document.getElementById('llm-timeout').value, 10);
     const neighborCountValue = parseInt(document.getElementById('neighbor-count').value, 10);
     const maxConcurrencyValue = parseInt(document.getElementById('max-concurrency').value, 10);
@@ -904,7 +903,6 @@ async function saveSettings() {
             api_base: apiBaseValue,
             image_mode: document.getElementById('llm-image-mode').value,
             temperature: Number.isFinite(temperatureValue) ? temperatureValue : 0.3,
-            max_tokens: Number.isFinite(maxTokensValue) ? maxTokensValue : 500,
             timeout_seconds: Number.isFinite(timeoutValue) ? timeoutValue : 60
         },
         processing: {
@@ -965,7 +963,6 @@ function applyConfigToUI(config) {
         document.getElementById('api-key').value = config.llm.api_key || '';
         document.getElementById('llm-image-mode').value = config.llm.image_mode || 'auto';
         document.getElementById('llm-temperature').value = config.llm.temperature ?? 0.3;
-        document.getElementById('llm-max-tokens').value = config.llm.max_tokens ?? 500;
         document.getElementById('llm-timeout').value = config.llm.timeout_seconds ?? 60;
         handleProviderChange({ preserveValues: true });
     }

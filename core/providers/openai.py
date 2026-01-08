@@ -211,8 +211,11 @@ class OpenAIProvider(BaseLLMProvider):
         return not self.config.model.lower().startswith("gpt-5")
 
     def _gpt5_max_output_tokens(self) -> int:
-        """Ensure GPT-5 has enough output tokens for high reasoning."""
-        return max(self.config.max_tokens, 3000)
+        """Ensure GPT-5 has enough output tokens for reasoning + response."""
+        # GPT-5 reasoning consumes output tokens internally before producing response
+        # Use a very high limit to avoid truncation - only charged for actual usage
+        # This accommodates long reasoning chains (e.g., analyzing book content)
+        return 100000
     
     def _should_debug(self) -> bool:
         """Check if debug logging is enabled."""

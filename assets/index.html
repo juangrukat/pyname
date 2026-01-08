@@ -126,15 +126,9 @@
                                     <input type="number" id="llm-temperature" min="0" max="2" step="0.1">
                                 </div>
                             </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="llm-max-tokens">Max Tokens</label>
-                                    <input type="number" id="llm-max-tokens" min="100" max="4000" step="50">
-                                </div>
-                                <div class="form-group">
-                                    <label for="llm-timeout">Timeout (seconds)</label>
-                                    <input type="number" id="llm-timeout" min="10" max="300" step="5">
-                                </div>
+                            <div class="form-group">
+                                <label for="llm-timeout">Timeout (seconds)</label>
+                                <input type="number" id="llm-timeout" min="10" max="300" step="5">
                             </div>
                         </section>
 
@@ -226,8 +220,8 @@
                             <h3>Processing Behavior</h3>
                             <div class="form-group">
                                 <label for="max-concurrency">Max concurrency</label>
-                                <input type="number" id="max-concurrency" min="1" max="10" step="1" value="1">
-                                <p class="field-hint">Higher values send more requests in parallel. Local models often work best at 1.</p>
+                                <input type="number" id="max-concurrency" min="1" max="50" step="1" value="1">
+                                <p class="field-hint">Higher values send more requests in parallel. Cloud APIs (OpenAI/Anthropic) handle 10-30 well. Local models often work best at 1.</p>
                             </div>
                             <div class="form-group">
                                 <label for="video-extract-count">Video frame extracts (OpenAI)</label>

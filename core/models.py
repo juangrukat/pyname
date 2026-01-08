@@ -249,7 +249,7 @@ class LLMConfig(BaseModel):
     api_key: str | None = None
     image_mode: ImageMode = ImageMode.AUTO
     temperature: float = Field(default=0.3, ge=0.0, le=2.0)
-    max_tokens: int = Field(default=500, ge=100, le=4000)
+    max_tokens: int = Field(default=500, ge=50)
     timeout_seconds: int = Field(default=60, ge=10, le=300)
 
 
@@ -267,7 +267,7 @@ class ProcessingConfig(BaseModel):
     include_file_content: bool = False
     content_max_chars: int = Field(default=2000, ge=200, le=20000)
     video_extract_count: int = Field(default=3, ge=0, le=10)
-    max_concurrency: int = Field(default=1, ge=1, le=10)
+    max_concurrency: int = Field(default=1, ge=1, le=50)
     auto_apply_tags: bool = True
     tag_count: int = Field(default=5, ge=0, le=10)
     tag_prompt: str = ""
