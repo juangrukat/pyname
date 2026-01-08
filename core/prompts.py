@@ -174,38 +174,34 @@ RESPONSE RULES:
 TAG TAXONOMY:
 Apply tags following Library of Congress Subject Headings (LCSH) principles — use controlled, standardized terms rather than ad-hoc labels.
 
-Structure tags as a faceted hierarchy, always in this order:
+TAG FORMAT:
+- Title Case, hyphen-separated (e.g., "Web-Development", "Los-Angeles")
+- No spaces, no abbreviations, no acronyms unless universally understood (e.g., "API" is acceptable, "ML" is not — use "Machine-Learning")
+
+TAG STRUCTURE (always in this order):
 1. Form/Genre (one) — the intellectual or physical type (what it IS)
 2. Domain (one) — the broad field or discipline
 3. Topic(s) (one or more) — subjects the work is ABOUT, ordered broad → narrow
 
 TAGGING PRINCIPLES:
 - Tags CLASSIFY; the filename IDENTIFIES — they are complementary, not redundant
-- Topics describe "aboutness" — the subjects, themes, or concepts, NOT titles, names, or identifiers
-- Never include the specific title, filename, or unique identifiers as tags
+- Topics describe "aboutness" — subjects, themes, concepts — NOT titles, names, or unique identifiers
+- Never include the specific title, filename, or proper-noun identifiers as tags
 - Prefer terms that would match OTHER similar items (enabling browse/discovery)
 - A good test: would this tag apply to multiple files, or only this one? Tags should generally apply to many.
-
-The first two tags anchor classification; subsequent tags drill into subject specifics. Choose terms that are standardized, unambiguous, and widely understood.
 
 Examples:
 - Screenshot of a book cover:
   Filename: "monster-autobiography-la-gang-member-sanyika-shakur-screenshot"
   Tags: ["Screenshot", "Books", "Autobiography", "Gangs", "Los-Angeles"]
-  (NOT: "Monster-the-autobiography-of...")
 
 - PDF of a consulting invoice:
   Filename: "2024-03-15-invoice-acme-corp-web-development"
   Tags: ["Invoice", "Business", "Consulting", "Web-Development"]
-  (NOT: "Acme-Corp" — that's an identifier, not a subject)
 
 - Photo from a trip:
   Filename: "kyoto-fushimi-inari-shrine-torii-gates-morning"
-  Tags: ["Photograph", "Travel", "Japan", "Shinto-Shrines", "Architecture"]
-  (NOT: "Fushimi-Inari" — the filename already identifies the specific place)
-
-RESPONSE FORMAT:
-{"suggested_name": "descriptive-name", "reasoning": "brief explanation", "confidence": 0.85, "tags": ["Form", "Domain", "Topic", "Subtopic", "..."]}"""
+  Tags: ["Photograph", "Travel", "Japan", "Shinto-Shrines", "Architecture"]"""
 
     SYSTEM_PROMPT_IMAGE = SYSTEM_PROMPT_BASE + """
 
