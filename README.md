@@ -265,7 +265,21 @@ These controls let you tune how much context the model sees and what influences 
 
 ### Tags & Prompt Overrides
 
-- `tag_count`, `tag_prompt`, and `tag_mode` control Finder tag suggestions and how they are applied.
+Pynamer has a full tagging pipeline, not just a single on/off toggle:
+
+- **Model-generated Finder tags** - Each result includes a list of suggested tags alongside the name suggestion.
+- **Tag taxonomy baked in** - Prompts enforce Library of Congress-style controlled vocabulary and a consistent tag structure:
+  - Form/Genre (what it is), Domain (broad field), then Topic(s) (aboutness)
+  - Title Case, hyphen-separated, no file-specific titles or one-off proper nouns
+- **Per-file control** - You can edit tag lists inline and toggle "Apply tags" per result.
+- **Batch control** - "Select all tags" / "Clear all tags" quickly enable or skip tagging across the batch.
+- **Configurable behavior** - `auto_apply_tags`, `tag_count`, `tag_prompt`, and `tag_mode` tune how tags are suggested and applied:
+  - `tag_count = 0` disables tag suggestions from the model
+  - `tag_mode = append` keeps existing Finder tags and adds new ones
+  - `tag_mode = replace` removes existing Finder tags before applying new ones
+- **Finder integration** - Tags are applied via the macOS `tag` CLI (`brew install tag`).
+
+Prompt overrides:
 - `prompts.system.*` and `prompts.user.*` let you override prompts per file type (`image`, `video`, `document`, `generic`).
 - `show_prompt_preview` + `prompt_preview_chars` reveal the exact prompt payloads in the results list.
 

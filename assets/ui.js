@@ -27,6 +27,7 @@ const elements = {
     undoBtn: document.getElementById('undo-btn'),
     clearBtn: document.getElementById('clear-btn'),
     addMoreBtn: document.getElementById('add-more-btn'),
+    selectAllFilesBtn: document.getElementById('select-all-files-btn'),
     settingsBtn: document.getElementById('settings-btn'),
     settingsModal: document.getElementById('settings-modal'),
     closeSettings: document.getElementById('close-settings'),
@@ -36,7 +37,10 @@ const elements = {
     progressFill: document.getElementById('progress-fill'),
     cancelBtn: document.getElementById('cancel-btn'),
     status: document.getElementById('status'),
-    selectAll: document.getElementById('select-all')
+    selectAll: document.getElementById('select-all'),
+    selectAllTagsBtn: document.getElementById('select-all-tags-btn'),
+    clearAllTagsBtn: document.getElementById('clear-all-tags-btn'),
+    dryRunMain: document.getElementById('dry-run-main')
 };
 
 const PROVIDER_DEFAULTS = {
@@ -112,6 +116,14 @@ function setupEventListeners() {
     // File actions
     elements.clearBtn.addEventListener('click', clearFiles);
     elements.addMoreBtn.addEventListener('click', selectFiles);
+    elements.selectAllFilesBtn.addEventListener('click', selectFiles);
+    
+    // Tag actions
+    elements.selectAllTagsBtn.addEventListener('click', selectAllTags);
+    elements.clearAllTagsBtn.addEventListener('click', clearAllTags);
+    
+    // Main UI dry run toggle
+    elements.dryRunMain.addEventListener('change', handleDryRunToggle);
     
     // Processing
     elements.generateBtn.addEventListener('click', startProcessing);
@@ -790,6 +802,71 @@ function syncSelectAll() {
     elements.selectAll.indeterminate = approvedCount > 0 && approvedCount < selectable.length;
 }
 
+function selectAllTags() {
+    const canApplyTags = state.config?.processing?.auto_apply_tags !== false;
+    if (!canApplyTags) return;
+    
+    state.results.forEach((r, index) => {
+        if (r.status !== 'failed') {
+            r.apply_tags = true;
+        }
+    });
+    
+    // Update all toggle checkboxes and tag inputs in the DOM
+    elements.resultsList.querySelectorAll('.apply-tags-toggle').forEach(toggle => {
+        if (!toggle.disabled) {
+            toggle.checked = true;
+        }
+    });
+    elements.resultsList.querySelectorAll('.tags-input').forEach(input => {
+        input.disabled = false;
+    });
+}
+
+function clearAllTags() {
+    state.results.forEach((r, index) => {
+        if (r.status !== 'failed') {
+            r.apply_tags = false;
+        }
+    });
+    
+    // Update all toggle checkboxes and tag inputs in the DOM
+    elements.resultsList.querySelectorAll('.apply-tags-toggle').forEach(toggle => {
+        if (!toggle.disabled) {
+            toggle.checked = false;
+        }
+    });
+    elements.resultsList.querySelectorAll('.tags-input').forEach(input => {
+        input.disabled = true;
+    });
+}
+
+function handleDryRunToggle(e) {
+    const isDryRun = e.target.checked;
+    
+    // Update state.config immediately
+    if (!state.config) {
+        state.config = { processing: {} };
+    }
+    if (!state.config.processing) {
+        state.config.processing = {};
+    }
+    state.config.processing.dry_run = isDryRun;
+    
+    // Also sync with settings modal checkbox
+    const settingsDryRun = document.getElementById('dry-run');
+    if (settingsDryRun) {
+        settingsDryRun.checked = isDryRun;
+    }
+}
+
+function syncDryRunCheckbox() {
+    const isDryRun = state.config?.processing?.dry_run || false;
+    if (elements.dryRunMain) {
+        elements.dryRunMain.checked = isDryRun;
+    }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Apply & Undo
 // ─────────────────────────────────────────────────────────────────────────────
@@ -817,7 +894,8 @@ async function applyResults() {
     
     try {
         const resultJson = await window.pywebview.api.apply_results(
-            JSON.stringify(toApply)
+            JSON.stringify(toApply),
+            isDryRun
         );
         const result = JSON.parse(resultJson);
         
@@ -967,6 +1045,7 @@ async function saveSettings() {
         if (envKeys) {
             state.config.env_api_keys = envKeys;
         }
+        syncDryRunCheckbox();
         closeSettings();
         setStatus('Settings saved');
         if (state.results.length > 0) {
@@ -1029,6 +1108,7 @@ function applyConfigToUI(config) {
     setupPromptPreviewControls();
     initializePromptOverrides(config.prompts);
     updatePromptEditor();
+    syncDryRunCheckbox();
 }
 
 function handleProviderChange(eventOrOptions) {

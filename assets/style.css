@@ -160,11 +160,13 @@ body::after {
 
 @media (min-width: 980px) {
     .main {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: 1fr;
         align-items: start;
     }
 
-    .drop-zone {
+    .drop-zone,
+    .file-list-container,
+    .results-container {
         grid-column: 1 / -1;
     }
 }
@@ -518,6 +520,35 @@ body::after {
     box-shadow: none;
     padding: 6px 10px;
     color: var(--accent-strong);
+}
+
+.btn-small {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+}
+
+.action-separator {
+    color: var(--border);
+    margin: 0 4px;
+}
+
+.results-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dry-run-toggle {
+    margin-right: 8px;
+    padding: 6px 12px;
+    background: rgba(226, 184, 92, 0.2);
+    border-radius: 999px;
+    border: 1px solid rgba(226, 184, 92, 0.4);
+}
+
+.dry-run-toggle input:checked + span {
+    color: var(--accent-strong);
+    font-weight: 600;
 }
 
 .btn-icon {

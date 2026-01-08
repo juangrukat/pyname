@@ -204,12 +204,13 @@ class API:
             return json.dumps({"status": "resumed"})
         return json.dumps({"status": "not_running"})
     
-    def apply_results(self, results_json: str) -> str:
+    def apply_results(self, results_json: str, dry_run: bool = None) -> str:
         """
         Apply approved rename operations.
         
         Args:
             results_json: JSON string with results to apply
+            dry_run: Optional override for dry_run setting (from main UI checkbox)
         """
         if not self._processor:
             return json.dumps({"error": "No processor available"})
@@ -225,7 +226,10 @@ class API:
                 results = [FileProcessingResult(**r) for r in results_data]
                 approved_count = sum(1 for r in results if r.status == "approved")
 
-                if self._processor.config.processing.dry_run:
+                # Use passed dry_run flag if provided, otherwise fall back to config
+                is_dry_run = dry_run if dry_run is not None else self._processor.config.processing.dry_run
+
+                if is_dry_run:
                     return json.dumps({
                         "success": True,
                         "dry_run": True,
