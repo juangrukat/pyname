@@ -1,0 +1,23 @@
+# Core
+pydantic>=2.0
+aiofiles>=23.0
+
+# GUI
+pywebview>=5.0
+
+# LLM Providers
+httpx>=0.25
+
+# Image Processing
+Pillow>=10.0
+
+# Document Parsing
+pypdf>=4.0
+markitdown>=0.0.1
+
+# JSON Repair
+json-repair>=0.25
+
+# Optional: for development
+pytest>=7.0
+pytest-asyncio>=0.21

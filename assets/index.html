@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pynamer</title>
+    <link rel="icon" type="image/jpeg" href="icon.jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <h1>Pynamer</h1>
+            <button id="settings-btn" class="btn btn-icon" title="Settings">⚙️</button>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Drop Zone -->
+            <div id="drop-zone" class="drop-zone">
+                <div class="drop-zone-content">
+                    <span class="drop-icon">📁</span>
+                    <p>Drop files or folders here or click to browse</p>
+                    <p class="hint">Supports images, videos, and documents</p>
+                </div>
+            </div>
+
+            <!-- File List -->
+            <div id="file-list-container" class="file-list-container hidden">
+                <div class="file-list-header">
+                    <span class="file-count">0 files selected</span>
+                    <div class="file-actions">
+                        <button id="clear-btn" class="btn btn-text">Clear</button>
+                        <button id="add-more-btn" class="btn btn-text">Add More</button>
+                    </div>
+                </div>
+                <ul id="file-list" class="file-list"></ul>
+            </div>
+
+            <!-- Results -->
+            <div id="results-container" class="results-container hidden">
+                <div class="results-header">
+                    <h2>Suggestions</h2>
+                    <div class="results-actions">
+                        <label class="checkbox">
+                            <input type="checkbox" id="select-all" checked>
+                            <span>Select All</span>
+                        </label>
+                    </div>
+                </div>
+                <ul id="results-list" class="results-list"></ul>
+            </div>
+        </main>
+
+        <!-- Footer / Action Bar -->
+        <footer class="footer">
+            <div class="status" id="status">Ready</div>
+            <div class="actions">
+                <button id="generate-btn" class="btn btn-primary" disabled>
+                    Generate Names
+                </button>
+                <button id="apply-btn" class="btn btn-success hidden">
+                    Apply Selected
+                </button>
+                <button id="undo-btn" class="btn btn-secondary hidden">
+                    Undo Last
+                </button>
+            </div>
+        </footer>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Settings</h2>
+                    <button class="modal-close" id="close-settings">×</button>
+                </div>
+                <div class="modal-body settings-layout">
+                    <nav class="settings-menu" aria-label="Settings sections">
+                        <button type="button" class="menu-item active" data-section="settings-llm">LLM</button>
+                        <button type="button" class="menu-item" data-section="settings-context">Context</button>
+                        <button type="button" class="menu-item" data-section="settings-naming">Naming</button>
+                        <button type="button" class="menu-item" data-section="settings-processing">Processing</button>
+                        <button type="button" class="menu-item" data-section="settings-prompts">Prompts</button>
+                        <button type="button" class="menu-item" data-section="settings-interface">Interface</button>
+                    </nav>
+                    <div class="settings-content">
+                        <section class="settings-section active" id="settings-llm">
+                            <h3>LLM Provider</h3>
+                            <div class="form-group">
+                                <label for="llm-provider">Provider</label>
+                                <select id="llm-provider">
+                                    <option value="ollama">Ollama (Local)</option>
+                                    <option value="lmstudio">LM Studio (Local)</option>
+                                    <option value="openai">OpenAI</option>
+                                    <option value="anthropic">Anthropic</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="llm-model">Model</label>
+                                <input type="text" id="llm-model" value="llava:latest">
+                            </div>
+                            <div class="form-group">
+                                <label for="api-base">API Base</label>
+                                <input type="text" id="api-base" value="http://localhost:11434">
+                                <p class="field-hint">Example: http://localhost:1234/v1 for LM Studio</p>
+                            </div>
+                            <div class="form-group" id="api-key-group" style="display: none;">
+                                <label for="api-key">API Key</label>
+                                <input type="password" id="api-key">
+                                <p class="field-hint">Stored locally in data/config.json.</p>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="llm-image-mode">Image Mode</label>
+                                    <select id="llm-image-mode">
+                                        <option value="auto">Auto</option>
+                                        <option value="native">Native</option>
+                                        <option value="base64">Base64</option>
+                                    </select>
+                                    <p class="field-hint">Auto uses model hints, native sends image blocks, base64 embeds data URLs.</p>
+                                </div>
+                                <div class="form-group">
+                                    <label for="llm-temperature">Temperature</label>
+                                    <input type="number" id="llm-temperature" min="0" max="2" step="0.1">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="llm-max-tokens">Max Tokens</label>
+                                    <input type="number" id="llm-max-tokens" min="100" max="4000" step="50">
+                                </div>
+                                <div class="form-group">
+                                    <label for="llm-timeout">Timeout (seconds)</label>
+                                    <input type="number" id="llm-timeout" min="10" max="300" step="5">
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="settings-section hidden" id="settings-context">
+                            <h3>Prompt Context</h3>
+                            <div class="form-group">
+                                <label class="checkbox">
+                                    <input type="checkbox" id="include-current-filename" checked>
+                                    <span>Include current filename</span>
+                                </label>
+                                <p class="field-hint">Turn off to keep the original name out of the prompt.</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox">
+                                    <input type="checkbox" id="include-parent-folder">
+                                    <span>Include parent folder name</span>
+                                </label>
+                                <p class="field-hint">Adds the containing folder name to the prompt.</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox">
+                                    <input type="checkbox" id="include-neighbors">
+                                    <span>Include neighboring filenames</span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="neighbor-count">Neighbor filename count</label>
+                                <input type="number" id="neighbor-count" min="0" max="10" step="1">
+                                <p class="field-hint">0 disables neighbor context.</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="folder-context-depth">Folder context depth</label>
+                                <input type="number" id="folder-context-depth" min="0" max="10" step="1">
+                                <p class="field-hint">0 disables, 1 includes parent, 2 adds grandparent, etc.</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox">
+                                    <input type="checkbox" id="include-file-content">
+                                    <span>Include file content (text/PDF)</span>
+                                </label>
+                                <p class="field-hint">Extracts text from common text/office files and PDFs (markitdown + textutil + pypdf).</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="content-max-chars">Content character limit</label>
+                                <input type="number" id="content-max-chars" min="200" max="20000" step="100">
+                                <p class="field-hint">Limits how much content is sent to the model.</p>
+                            </div>
+                        </section>
+
+                        <section class="settings-section hidden" id="settings-naming">
+                            <h3>Naming Style</h3>
+                            <div class="form-group">
+                                <label for="case-style">Case Style</label>
+                                <select id="case-style">
+                                    <option value="kebabCase">kebab-case</option>
+                                    <option value="snakeCase">snake_case</option>
+                                    <option value="camelCase">camelCase</option>
+                                    <option value="pascalCase">PascalCase</option>
+                                    <option value="capitalCase">Capital Case</option>
+                                    <option value="constantCase">CONSTANT_CASE</option>
+                                    <option value="dotCase">dot.case</option>
+                                    <option value="trainCase">Train-Case</option>
+                                    <option value="sentenceCase">Sentence case</option>
+                                    <option value="noCase">no case</option>
+                                    <option value="pascalSnakeCase">Pascal_Snake_Case</option>
+                                    <option value="pathCase">path/case</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox">
+                                    <input type="checkbox" id="preserve-extension" checked>
+                                    <span>Preserve file extension</span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox">
+                                    <input type="checkbox" id="include-date">
+                                    <span>Include date prefix</span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="date-format">Date format</label>
+                                <input type="text" id="date-format" value="%Y-%m-%d">
+                                <p class="field-hint">Uses Python strftime format tokens.</p>
+                            </div>
+                        </section>
+
+                        <section class="settings-section hidden" id="settings-processing">
+                            <h3>Processing Behavior</h3>
+                            <div class="form-group">
+                                <label for="max-concurrency">Max concurrency</label>
+                                <input type="number" id="max-concurrency" min="1" max="10" step="1" value="1">
+                                <p class="field-hint">Higher values send more requests in parallel. Local models often work best at 1.</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="video-extract-count">Video frame extracts (OpenAI)</label>
+                                <input type="number" id="video-extract-count" min="0" max="10" step="1" value="3">
+                                <p class="field-hint">Extracts N frames with ffmpeg and sends them as images. Temp files are auto-removed.</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox">
+                                    <input type="checkbox" id="auto-tags" checked>
+                                    <span>Auto-apply Finder tags</span>
+                                </label>
+                                <p class="field-hint">Tag application can be toggled per file in the results list.</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="tag-mode">Tag behavior</label>
+                                <select id="tag-mode">
+                                    <option value="append">Append to existing tags</option>
+                                    <option value="replace">Replace existing tags</option>
+                                </select>
+                                <p class="field-hint">Controls whether suggested tags replace or append to Finder tags.</p>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="tag-count">Tag count</label>
+                                    <input type="number" id="tag-count" min="0" max="10" step="1">
+                                    <p class="field-hint">0 disables tag suggestions.</p>
+                                </div>
+                                <div class="form-group">
+                                    <label for="drop-folder-depth">Drop folder depth</label>
+                                    <input type="number" id="drop-folder-depth" min="0" max="10" step="1">
+                                    <p class="field-hint">How deep to scan when dropping folders.</p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="tag-prompt">Tag prompt guidance</label>
+                                <textarea id="tag-prompt" rows="3" placeholder="e.g., prioritize topics, locations, or people"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox">
+                                    <input type="checkbox" id="dry-run">
+                                    <span>Dry run (preview only)</span>
+                                </label>
+                                <p class="field-hint">When enabled, no files are renamed.</p>
+                            </div>
+                        </section>
+
+                        <section class="settings-section hidden" id="settings-prompts">
+                            <h3>Prompt Overrides</h3>
+                            <div class="form-group">
+                                <label for="prompt-type">File type</label>
+                                <select id="prompt-type">
+                                    <option value="image">Image</option>
+                                    <option value="video">Video</option>
+                                    <option value="document">Document</option>
+                                    <option value="generic">Generic</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="system-prompt">System prompt override</label>
+                                <textarea id="system-prompt" rows="6" placeholder="Leave blank to use the built-in default."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="user-prompt">User prompt override</label>
+                                <textarea id="user-prompt" rows="8" placeholder="Leave blank to use the built-in default."></textarea>
+                                <p class="field-hint">Placeholders are replaced before sending to the model.</p>
+                            </div>
+                            <details class="prompt-help">
+                                <summary>Placeholder guide + JSON response</summary>
+                                <p>Placeholders only affect the user prompt text. The model must still return JSON per the system prompt. Use {{ and }} to escape braces.</p>
+                                <p>Common placeholders: {file_name}, {extension}, {size_human}, {created_at}, {modified_at}, {parent_folder_name}, {folder_context}, {neighbor_names}, {neighbor_names_csv}, {content_excerpt}, {content_source}, {content_truncated}, {video_extract_count}, {tag_count}, {tag_prompt}.</p>
+                                <pre>Example:
+Rename "{file_name}" from {folder_context}.
+Use this excerpt:
+{content_excerpt}</pre>
+                            </details>
+                            <div class="form-row">
+                                <button type="button" class="btn btn-secondary" id="reset-prompts">Reset to Defaults</button>
+                            </div>
+                        </section>
+
+                        <section class="settings-section hidden" id="settings-interface">
+                            <h3>Interface</h3>
+                            <div class="form-group">
+                                <label class="checkbox">
+                                    <input type="checkbox" id="confirm-apply" checked>
+                                    <span>Confirm before applying changes</span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox">
+                                    <input type="checkbox" id="show-reasoning" checked>
+                                    <span>Show reasoning in results</span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox">
+                                    <input type="checkbox" id="show-prompt-preview">
+                                    <span>Show prompt preview in results</span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="prompt-preview-chars">Prompt preview length</label>
+                                <input type="number" id="prompt-preview-chars" min="200" max="20000" step="100">
+                                <p class="field-hint">Limits how many characters are shown per prompt.</p>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="save-settings" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Overlay -->
+        <div id="progress-overlay" class="overlay hidden">
+            <div class="progress-container">
+                <div class="progress-spinner"></div>
+                <p id="progress-text">Processing...</p>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+                <button id="cancel-btn" class="btn btn-text">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="ui.js"></script>
+</body>
+</html>
