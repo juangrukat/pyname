@@ -1,5 +1,11 @@
 # Pynamer
 
+
+
+https://github.com/user-attachments/assets/5c551a24-71bd-4e56-9b5f-6cc53e949496
+
+
+
 A macOS-native application that uses vision-capable LLMs to intelligently rename files based on their content, metadata, and surrounding context.
 
 ![macOS](https://img.shields.io/badge/macOS-13.0+-blue?logo=apple)
