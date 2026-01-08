@@ -25,13 +25,15 @@ class AnthropicProvider(BaseLLMProvider):
     def __init__(self, config: LLMConfig, prompts: PromptOverrides | None = None):
         super().__init__(config, prompts)
         self.base_url = config.api_base.rstrip("/")
+        headers = {
+            "anthropic-version": "2023-06-01",
+            "Content-Type": "application/json"
+        }
+        if config.api_key:
+            headers["x-api-key"] = config.api_key
         self.client = httpx.AsyncClient(
             timeout=config.timeout_seconds,
-            headers={
-                "x-api-key": config.api_key,
-                "anthropic-version": "2023-06-01",
-                "Content-Type": "application/json"
-            }
+            headers=headers
         )
     
     async def health_check(self) -> bool:

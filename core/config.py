@@ -102,10 +102,20 @@ class ConfigManager:
         }
 
     def _apply_env_api_key(self, config: AppConfig) -> AppConfig:
-        """Apply env var API key if config does not include one."""
-        if config.llm.api_key:
+        """Apply env var API key - resolve references or auto-detect."""
+        api_key = config.llm.api_key
+        
+        # If api_key is an env var reference like $VAR or ${VAR}, resolve it
+        if api_key and isinstance(api_key, str):
+            resolved_key = self._resolve_env_var(api_key)
+            if resolved_key != api_key:
+                # It was an env var reference, use the resolved value
+                updated_llm = config.llm.model_copy(update={"api_key": resolved_key})
+                return config.model_copy(update={"llm": updated_llm})
+            # Otherwise it's a literal key, use as-is
             return config
-
+        
+        # Auto-detect env var based on provider if no key specified
         env_var = None
         if config.llm.provider == LLMProvider.OPENAI:
             env_var = "OPENAI_API_KEY"
@@ -121,3 +131,24 @@ class ConfigManager:
 
         updated_llm = config.llm.model_copy(update={"api_key": env_key})
         return config.model_copy(update={"llm": updated_llm})
+
+    @staticmethod
+    def _resolve_env_var(value: str) -> str | None:
+        """Resolve environment variable references like $VAR or ${VAR}."""
+        if not value:
+            return value
+        
+        value = value.strip()
+        
+        # Handle ${VAR} format
+        if value.startswith("${") and value.endswith("}"):
+            var_name = value[2:-1]
+            return os.getenv(var_name)
+        
+        # Handle $VAR format
+        if value.startswith("$"):
+            var_name = value[1:]
+            return os.getenv(var_name)
+        
+        # Not an env var reference, return as-is
+        return value
